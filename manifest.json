@@ -1,0 +1,7 @@
+{
+  "name": "Circularka",
+  "id": "888369548293411843",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "ui": "dist/ui.html"
+}
