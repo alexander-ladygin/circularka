@@ -1,7 +1,9 @@
 @import 'config';
 
-.input-group {
-  $border-radius: 4px;
+.mdc-input {
+  $input-padding:          10px;
+  $input-border:           1px solid #ccc;
+  $border-radius:          4px;
 
   font-size: 90%;
   display: block;
@@ -20,13 +22,13 @@
 
   input {
     font-size: 100%;
-    padding: 10px;
     display: block;
     width: 100%;
     border: none;
+    padding: $input-padding;
     background-color: $color-body;
     border-radius: $border-radius;
-    border-bottom: 1px solid #ccc;
+    border-bottom: $input-border;
 
     &:focus {
       outline: none;
@@ -174,5 +176,11 @@
   }
   &--transparent &__label {
     background-color: transparent;
+  }
+  &--outline {
+    input {
+      border: $input-border;
+      padding: $input-padding / 1.5 $input-padding;
+    }
   }
 }

@@ -1,0 +1,25 @@
+@import 'config';
+
+$margin: 2px 5px 8px 15px 20px;
+
+.mx {
+  $i: 1;
+  @each $value in $margin {
+    &-#{$i} { @include severalBySuffix(margin, right left, $value); }
+    $i: $i + 1;
+  }
+}
+.ml {
+  $i: 1;
+  @each $value in $margin {
+    &-#{$i} { margin-left: $value; }
+    $i: $i + 1;
+  }
+}
+.mr {
+  $i: 1;
+  @each $value in $margin {
+    &-#{$i} { margin-right: $value; }
+    $i: $i + 1;
+  }
+}

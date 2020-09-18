@@ -1,7 +1,7 @@
 import { createCompilerHost } from "../node_modules/typescript/lib/typescript";
 
 figma.showUI(__html__);
-figma.ui.resize(190, 160);
+figma.ui.resize(230, 280);
 
 const wVal = 1.22465;
 const hVal = 0.7070;
@@ -135,7 +135,7 @@ const FN = {
 
 figma.ui.onmessage = msg => {
   switch (msg.type) {
-    case 'isometric-top': {
+    case 'magic': {
       if (!figma.currentPage.selection.length) return;
 
       let firstInGroup = figma.createRectangle(),

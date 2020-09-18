@@ -1,4 +1,5 @@
 @import 'config';
+@import 'range';
 @import 'material-input';
 
 
@@ -9,6 +10,10 @@ $button-icon-size:       80%;
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.text-right  { text-align: right; }
+.text-left   { text-align: left; }
+.text-center { text-align: center; }
 
 .buttons-wrapper {
   position: relative;
@@ -49,7 +54,36 @@ body {
 
 .flex-group {
   display: flex;
+  position: relative;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+
+  &--start {
+    align-items: flex-end;
+  }
+  &--end {
+    align-items: flex-start;
+  }
+
+  &__label {
+    font-size: 12px;
+    top: 5px; left: 0;
+    position: absolute;
+
+    &--right {
+      right: 0;
+      left: auto;
+    }
+  }
+}
+
+
+.startAngleInput {
+  margin-top: 5px;
+  margin-left: 10px;
+}
+.endAngleInput {
+  margin-top: 5px;
+  margin-right: 10px;
 }

@@ -1,27 +1,5 @@
 import './scss/ui.scss'
 
-// isometric
-document.getElementById('isometric-top').addEventListener('click', function (e) {
-  parent.postMessage({ pluginMessage: { type: this.id } }, '*');
-});
-
-document.getElementById('isometric-bottom').addEventListener('click', function (e) {
-  parent.postMessage({ pluginMessage: { type: this.id } }, '*');
-});
-
-document.getElementById('isometric-right').addEventListener('click', function (e) {
-  parent.postMessage({ pluginMessage: { type: this.id } }, '*');
-});
-
-document.getElementById('isometric-left').addEventListener('click', function (e) {
-  parent.postMessage({ pluginMessage: { type: this.id } }, '*');
-});
-
-// move
-function moveGetValue() {
-  return +document.getElementById('move-value').value;
-}
-
 function inputMouseWheel (e) {
   e.preventDefault();
 
@@ -54,20 +32,60 @@ function inputMouseWheel (e) {
 
 }
 
-document.getElementById('move-value').addEventListener('mousewheel', inputMouseWheel, false);
+const startAngleRange = document.getElementById('startAngle');
+const startAngleInput = document.getElementById('startAngleInput');
 
-document.getElementById('move-top-right').onclick = () => {
-  parent.postMessage({ pluginMessage: { type: 'move-top-right', value: moveGetValue() } }, '*')
-}
+const endAngleRange = document.getElementById('endAngle');
+const endAngleInput = document.getElementById('endAngleInput');
 
-document.getElementById('move-top-left').onclick = () => {
-  parent.postMessage({ pluginMessage: { type: 'move-top-left', value: moveGetValue() } }, '*')
-}
+const shiftKeyValue = 15;
+const ctrlKeyValue = 30;
 
-document.getElementById('move-bottom-left').onclick = () => {
-  parent.postMessage({ pluginMessage: { type: 'move-bottom-left', value: moveGetValue() } }, '*')
-}
+let shiftKeyPress = false;
+let ctrlKeyPress = false;
 
-document.getElementById('move-bottom-right').onclick = () => {
-  parent.postMessage({ pluginMessage: { type: 'move-bottom-right', value: moveGetValue() } }, '*')
-}
+document.addEventListener('keydown' ,function (e) {
+  shiftKeyPress = e.shiftKey;
+  ctrlKeyPress = e.ctrlKey;
+});
+
+
+// start range
+startAngleRange.addEventListener('input', function (e) { shiftKeyPress = shiftKeyPress = false; });
+startAngleRange.addEventListener('input', function (e) {
+  if (shiftKeyPress) this.value = Math.round(this.value) / shiftKeyValue * shiftKeyValue;
+    else if (ctrlKeyPress) this.value = Math.round(this.value) / ctrlKeyValue * ctrlKeyValue;
+
+  startAngleInput.value = Math.round(this.value);
+
+  if (Math.round(this.value) > Math.round(endAngleRange.value)) {
+    endAngleRange.value = endAngleInput.value = (Math.round(this.value) - 1 < 360 ? Math.round(this.value) : Math.round(this.value) + 1);
+  }
+});
+startAngleInput.addEventListener('change', function (e) {
+  this.value = startAngleRange.value = (Math.round(this.value) < 0 ? 0 : (Math.round(this.value) > 360 ? 360 : Math.round(this.value)));
+
+  if (Math.round(this.value) > Math.round(endAngleRange.value)) {
+    endAngleRange.value = endAngleInput.value = (Math.round(this.value) - 1 < 360 ? Math.round(this.value) : Math.round(this.value) + 1);
+  }
+});
+
+// end range
+endAngleRange.addEventListener('input', function (e) { shiftKeyPress = shiftKeyPress = false; });
+endAngleRange.addEventListener('input', function (e) {
+  if (shiftKeyPress) this.value = Math.round(this.value) / shiftKeyValue * shiftKeyValue;
+    else if (ctrlKeyPress) this.value = Math.round(this.value) / ctrlKeyValue * ctrlKeyValue;
+
+  endAngleInput.value = Math.round(this.value);
+
+  if (Math.round(this.value) < Math.round(startAngleRange.value)) {
+    startAngleRange.value = startAngleInput.value = (Math.round(this.value) - 1 < 0 ? Math.round(this.value) : Math.round(this.value) - 1);
+  }
+});
+endAngleInput.addEventListener('change', function (e) {
+  this.value = endAngleRange.value = (Math.round(this.value) < 0 ? 0 : (Math.round(this.value) > 360 ? 360 : Math.round(this.value)));
+
+  if (Math.round(this.value) < Math.round(startAngleRange.value)) {
+    startAngleRange.value = startAngleInput.value = (Math.round(this.value) - 1 < 0 ? Math.round(this.value) : Math.round(this.value) - 1);
+  }
+});
