@@ -5,6 +5,7 @@
   "main": "code.js",
   "scripts": {
     "dev": "npx webpack --mode=development --watch",
+    "serve": "npx webpack-dev-server --content-base src --hot --inline",
     "build": "npx webpack --mode=production"
   },
   "author": "Ladyginpro",
@@ -29,6 +30,7 @@
     "webpack-cli": "^3.3.6"
   },
   "devDependencies": {
-    "@figma/plugin-typings": "^1.16.1"
+    "@figma/plugin-typings": "^1.16.1",
+    "webpack-dev-server": "^3.11.0"
   }
 }

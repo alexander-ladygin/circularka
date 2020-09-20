@@ -1,31 +1,49 @@
-<div class="flex-group flex-group--start">
-  <label class="flex-group__label">Start angle:</label>
-  <input type="range" id="startAngle" class="range" min="0" max="360" value="0">
-  <div class="startAngleInput mdc-input mdc-input--outline">
-    <input type="number" id="startAngleInput" min="0" max="360" value="0" required>
-    <span class="mdc-input__bar"></span>
+<div id="app">
+  <div class="flex-group flex-group--start">
+    <label class="flex-group__label">Start angle:</label>
+    <input type="range" id="startAngle" class="range" min="0" max="360" value="0">
+    <div class="startAngleInput mdc-input mdc-input--outline">
+      <input type="number" id="startAngleInput" min="0" max="360" value="0" required>
+      <span class="mdc-input__bar"></span>
+    </div>
   </div>
-</div>
 
-<div class="flex-group flex-group--start">
-  <label class="flex-group__label flex-group__label--right">End angle:</label>
-  <div class="endAngleInput mdc-input mdc-input--outline">
-    <input type="number" id="endAngleInput" min="0" max="360" value="360" required>
-    <span class="mdc-input__bar"></span>
+  <div class="flex-group flex-group--start">
+    <label class="flex-group__label flex-group__label--right">End angle:</label>
+    <div class="endAngleInput mdc-input mdc-input--outline">
+      <input type="number" id="endAngleInput" min="0" max="360" value="360" required>
+      <span class="mdc-input__bar"></span>
+    </div>
+    <input type="range" id="endAngle" class="range" min="0" max="360" value="360">
   </div>
-  <input type="range" id="endAngle" class="range" min="0" max="360" value="360">
-</div>
 
-<div class="flex-group">
-  <div class="mdc-input">
-    <input type="number" id="radius" data-min="0" value="10" required>
-    <span class="mdc-input__bar"></span>
-    <label class="mdc-input__label">Offset radius (px):</label>
+  <div class="flex-group">
+    <div class="mdc-input">
+      <input type="number" id="radius" data-min="0" value="10" required>
+      <span class="mdc-input__bar"></span>
+      <label class="mdc-input__label">Offset radius (px):</label>
+    </div>
+    <div id="direction" class="mdc-select">
+      <div class="mdc-select__selected-anchor">
+        <span class="mdc-select__label">Direction:</span>
+        <span class="mdc-select__selected-text"></span>
+        <span class="mdc-select__bar"></span>
+        <span class="mdc-select__icon"></span>
+      </div>
+      <ul class="mdc-select__menu">
+        <li class="mdc-select__menu__item" data-value="top" data-index="0">
+          <span>10</span>
+        </li>
+        <li class="mdc-select__menu__item" data-value="right" data-index="1">
+          <span>Right</span>
+        </li>
+        <li class="mdc-select__menu__item" data-value="bottom" data-index="2">
+          <span>Bottom</span>
+        </li>
+        <li class="mdc-select__menu__item" data-value="left" data-index="3">
+          <span>Left</span>
+        </li>
+      </ul>
+    </div>
   </div>
-  <select id="direction">
-    <option value="top">Top</option>
-    <option value="right">Right</option>
-    <option value="bottom">Bottom</option>
-    <option value="left">Left</option>
-  </select>
 </div>

@@ -44,17 +44,17 @@ const ctrlKeyValue = 30;
 let shiftKeyPress = false;
 let ctrlKeyPress = false;
 
-document.addEventListener('keydown' ,function (e) {
+document.addEventListener('keydown', function (e) {
   shiftKeyPress = e.shiftKey;
   ctrlKeyPress = e.ctrlKey;
 });
 
 
 // start range
-startAngleRange.addEventListener('input', function (e) { shiftKeyPress = shiftKeyPress = false; });
+startAngleRange.addEventListener('change', function (e) { shiftKeyPress = ctrlKeyPress = false; });
 startAngleRange.addEventListener('input', function (e) {
-  if (shiftKeyPress) this.value = Math.round(this.value) / shiftKeyValue * shiftKeyValue;
-    else if (ctrlKeyPress) this.value = Math.round(this.value) / ctrlKeyValue * ctrlKeyValue;
+  if (shiftKeyPress) this.value = Math.round(this.value / shiftKeyValue) * shiftKeyValue;
+    else if (ctrlKeyPress) this.value = Math.round(this.value / ctrlKeyValue) * ctrlKeyValue;
 
   startAngleInput.value = Math.round(this.value);
 
@@ -68,13 +68,15 @@ startAngleInput.addEventListener('change', function (e) {
   if (Math.round(this.value) > Math.round(endAngleRange.value)) {
     endAngleRange.value = endAngleInput.value = (Math.round(this.value) - 1 < 360 ? Math.round(this.value) : Math.round(this.value) + 1);
   }
+
+  shiftKeyPress = ctrlKeyPress = false;
 });
 
 // end range
-endAngleRange.addEventListener('input', function (e) { shiftKeyPress = shiftKeyPress = false; });
+endAngleRange.addEventListener('change', function (e) { shiftKeyPress = ctrlKeyPress = false; });
 endAngleRange.addEventListener('input', function (e) {
-  if (shiftKeyPress) this.value = Math.round(this.value) / shiftKeyValue * shiftKeyValue;
-    else if (ctrlKeyPress) this.value = Math.round(this.value) / ctrlKeyValue * ctrlKeyValue;
+  if (shiftKeyPress) this.value = Math.round(this.value / shiftKeyValue) * shiftKeyValue;
+    else if (ctrlKeyPress) this.value = Math.round(this.value / ctrlKeyValue) * ctrlKeyValue;
 
   endAngleInput.value = Math.round(this.value);
 
@@ -87,5 +89,39 @@ endAngleInput.addEventListener('change', function (e) {
 
   if (Math.round(this.value) < Math.round(startAngleRange.value)) {
     startAngleRange.value = startAngleInput.value = (Math.round(this.value) - 1 < 0 ? Math.round(this.value) : Math.round(this.value) - 1);
+  }
+
+  shiftKeyPress = ctrlKeyPress = false;
+});
+
+// mdc-selec
+[].forEach.call(document.querySelectorAll('.mdc-select'), function (select) {
+  select.addEventListener('click', function (e) {
+    let currentItem = e.target.closest('.mdc-select__menu__item'),
+      selectedTextItem = e.target;
+
+    if (currentItem) {
+      let selectNode = currentItem.closest('.mdc-select'),
+        selectedTextItem = selectNode.querySelector('.mdc-select__selected-text');
+
+      selectedTextItem.innerHTML = currentItem.innerText;
+      selectedTextItem.setAttribute('data-value', currentItem.getAttribute('data-value'));
+      selectedTextItem.setAttribute('data-index', currentItem.getAttribute('data-index'));
+
+      selectNode.classList.add('active');
+      selectNode.classList.remove('hover');
+    } else if (e.target.classList && e.target.classList.contains('mdc-select__selected-text')) {
+      e.target.closest('.mdc-select').classList.toggle('hover');
+    } else if (e.target.closest('.mdc-select__selected-text')) {
+      e.target.closest('.mdc-select').classList.toggle('hover');
+    }
+  });
+});
+
+document.addEventListener('click', function (e) {
+  if (!e.target.closest('.mdc-select')) {
+    [].forEach.call(document.querySelectorAll('.mdc-select'), function (s) {
+      s.classList.remove('hover');
+    });
   }
 });
