@@ -1,5 +1,84 @@
 import './scss/ui.scss'
 
+const uiSizeExtra = 60;
+
+// let userData = {
+//   angleStart: 0,
+//   angleEnd: 360,
+//   resetItemRotate: false,
+//   radius: 200,
+//   copiesEnabled: false,
+//   copies: 1,
+//   direction: 'top',
+//   randomOffset: {
+//     enabled: false,
+//     min: 200,
+//     max: 400,
+//   },
+//   rotateItems: false,
+//   counterClockwise: false
+// };
+
+// async function loadSettings() {
+//   let userOptions = await figma.clientStorage.getAsync('options');
+
+//   if (userOptions) {
+//     userData = JSON.parse(userOptions);
+//     applySettings();
+//   } else {
+//     await figma.clientStorage.setAsync('options', JSON.stringify(userData));
+//   }
+// }
+
+// function saveSettings() {
+//   userData = {
+//     angleStart: +document.getElementById('startAngle').value,
+//     angleEnd: +document.getElementById('endAngle').value,
+//     resetItemRotate: document.getElementById('resetRotateItems').checked,
+//     radius: +document.getElementById('radius').value,
+//     copiesEnabled: document.getElementById('copiesEnabled').checked,
+//     copies: document.getElementById('copies').value,
+//     direction: document.getElementById('direction').getAttribute('data-value'),
+//     randomOffset: {
+//       enabled: document.getElementById('randomOffsetEnabled').checked,
+//       min: +document.getElementById('randomOffsetMin').value,
+//       max: +document.getElementById('randomOffsetMax').value,
+//     },
+//     rotateItems: document.getElementById('rotateEachItems').checked ? (document.getElementById('rotateEachItemsRandom').checked ? 'random' : +document.getElementById('rotateItemsValueRange').value) : false,
+//     counterClockwise: +document.getElementById('counterClockwise').checked,
+//   };
+
+//   figma.clientStorage.setAsync('options', JSON.stringify(userData));
+// }
+
+// function applySettings() {
+//   document.getElementById('startAngle').value = userData.angleStart;
+//   document.getElementById('endAngle').value = userData.angleEnd;
+//   document.getElementById('resetRotateItems').checked = userData.resetItemRotate;
+//   document.getElementById('radius').value = userData.radius;
+//   document.getElementById('copiesEnabled').checked = userData.copiesEnabled;
+//   document.getElementById('copies').value = userData.copies;
+
+//   let dNode = document.getElementById('direction'),
+//     ditem = dNode.querySelector('.mdc-select__menu [data-value="' + userData.direction + '"]');
+//   dNode.setAttribute('data-value', userData.direction);
+//   dNode.setAttribute('data-index', dNode.getAttribute('data-index'));
+//   dNode.querySelector('.mdc-select__selected-text').innerHTML = dNode.innerText;
+
+//   document.getElementById('randomOffsetEnabled').checked = userData.randomOffset.enabled;
+//   document.getElementById('randomOffsetMin').value = userData.randomOffset.min;
+//   document.getElementById('randomOffsetMax').value = userData.randomOffset.max;
+
+//   document.getElementById('rotateEachItems').checked = userData.rotateItems === true;
+//   document.getElementById('rotateEachItemsRandom').checked = userData.rotateItems === 'random';
+//   document.getElementById('rotateItemsValueRange').value = typeof userData.rotateItems === 'number' ? userData.rotateItems : 0;
+//   document.getElementById('counterClockwise').checked = userData.counterClockwise;
+
+//   figma.clientStorage.setAsync('options', JSON.stringify(userData));
+// }
+
+// loadSettings();
+
 function inputMouseWheel (e) {
   e.preventDefault();
 
@@ -38,6 +117,9 @@ const startAngleInput = document.getElementById('startAngleInput');
 const endAngleRange = document.getElementById('endAngle');
 const endAngleInput = document.getElementById('endAngleInput');
 
+const rotateItemsValueRange = document.getElementById('rotateItemsValueRange');
+const rotateItemsValueInput = document.getElementById('rotateItemsValueInput');
+
 const shiftKeyValue = 15;
 const ctrlKeyValue = 30;
 
@@ -51,7 +133,10 @@ document.addEventListener('keydown', function (e) {
 
 
 // start range
-startAngleRange.addEventListener('change', function (e) { shiftKeyPress = ctrlKeyPress = false; });
+startAngleRange.addEventListener('change', function (e) {
+  shiftKeyPress = ctrlKeyPress = false;
+  run();
+});
 startAngleRange.addEventListener('input', function (e) {
   if (shiftKeyPress) this.value = Math.round(this.value / shiftKeyValue) * shiftKeyValue;
     else if (ctrlKeyPress) this.value = Math.round(this.value / ctrlKeyValue) * ctrlKeyValue;
@@ -70,10 +155,14 @@ startAngleInput.addEventListener('change', function (e) {
   }
 
   shiftKeyPress = ctrlKeyPress = false;
+  run();
 });
 
 // end range
-endAngleRange.addEventListener('change', function (e) { shiftKeyPress = ctrlKeyPress = false; });
+endAngleRange.addEventListener('change', function (e) {
+  shiftKeyPress = ctrlKeyPress = false;
+  run();
+});
 endAngleRange.addEventListener('input', function (e) {
   if (shiftKeyPress) this.value = Math.round(this.value / shiftKeyValue) * shiftKeyValue;
     else if (ctrlKeyPress) this.value = Math.round(this.value / ctrlKeyValue) * ctrlKeyValue;
@@ -92,6 +181,26 @@ endAngleInput.addEventListener('change', function (e) {
   }
 
   shiftKeyPress = ctrlKeyPress = false;
+  run();
+});
+
+// rotate each items
+
+rotateItemsValueRange.addEventListener('change', function (e) {
+  shiftKeyPress = ctrlKeyPress = false;
+  run();
+});
+rotateItemsValueRange.addEventListener('input', function (e) {
+  if (shiftKeyPress) this.value = Math.round(this.value / shiftKeyValue) * shiftKeyValue;
+    else if (ctrlKeyPress) this.value = Math.round(this.value / ctrlKeyValue) * ctrlKeyValue;
+
+    rotateItemsValueInput.value = Math.round(this.value);
+});
+rotateItemsValueInput.addEventListener('change', function (e) {
+  this.value = rotateItemsValueRange.value = (Math.round(this.value) < 0 ? 0 : (Math.round(this.value) > 360 ? 360 : Math.round(this.value)));
+
+  shiftKeyPress = ctrlKeyPress = false;
+  run();
 });
 
 // mdc-selec
@@ -105,15 +214,32 @@ endAngleInput.addEventListener('change', function (e) {
         selectedTextItem = selectNode.querySelector('.mdc-select__selected-text');
 
       selectedTextItem.innerHTML = currentItem.innerText;
-      selectedTextItem.setAttribute('data-value', currentItem.getAttribute('data-value'));
-      selectedTextItem.setAttribute('data-index', currentItem.getAttribute('data-index'));
+      selectNode.setAttribute('data-value', currentItem.getAttribute('data-value'));
+      selectNode.setAttribute('data-index', currentItem.getAttribute('data-index'));
 
       selectNode.classList.add('active');
       selectNode.classList.remove('hover');
+
+      run();
     } else if (e.target.classList && e.target.classList.contains('mdc-select__selected-text')) {
       e.target.closest('.mdc-select').classList.toggle('hover');
     } else if (e.target.closest('.mdc-select__selected-text')) {
       e.target.closest('.mdc-select').classList.toggle('hover');
+    }
+  });
+
+  select.addEventListener('mousewheel', function (e) {
+    let delta = Math.max(-1, Math.min(1, e.wheelDelta || -e.detail)) * -1,
+      index = +this.getAttribute('data-index'),
+      l = this.querySelectorAll('.mdc-select__menu__item').length,
+      newIndex = index + delta;
+
+    if (newIndex >= 0 && newIndex < l) {
+      this.setAttribute('data-index', newIndex);
+      this.setAttribute('data-value', this.querySelector(`[data-index="${newIndex}"]`).getAttribute('data-value'));
+      this.querySelector('.mdc-select__selected-text').innerHTML = this.querySelector(`[data-index="${newIndex}"]`).innerText;
+
+      run();
     }
   });
 });
@@ -125,3 +251,122 @@ document.addEventListener('click', function (e) {
     });
   }
 });
+
+
+// checkbox
+document.getElementById('resetRotateItems').addEventListener('change', function (e) {
+  run();
+});
+document.getElementById('counterClockwise').addEventListener('change', function (e) {
+  run();
+});
+document.getElementById('rotateEachItems').addEventListener('change', function (e) {
+  let random = document.getElementById('rotateEachItemsRandom');
+  if (this.checked) random.parentNode.removeAttribute('disabled');
+    else random.parentNode.setAttribute('disabled', '');
+
+  document.querySelector('.rotateItemsValueGroup').classList.toggle('none', !this.checked);
+  parent.postMessage({ pluginMessage: {
+    type: 'resize',
+    extraWidth: 0,
+    extraHeight: this.checked ? 60 : -60
+  } }, '*');
+
+  run();
+});
+
+document.getElementById('rotateEachItemsRandom').addEventListener('change', function (e) {
+  let rotateValueNode = document.querySelector('.rotateItemsValueGroup');
+  if (!this.checked) rotateValueNode.removeAttribute('disabled');
+    else rotateValueNode.setAttribute('disabled', '');
+
+  run();
+});
+
+document.getElementById('copies').addEventListener('change', function (e) {
+  run();
+});
+document.getElementById('copiesEnabled').addEventListener('change', function (e) {
+  document.querySelector('.copies').classList.toggle('none', !this.checked);
+  parent.postMessage({ pluginMessage: {
+    type: 'resize',
+    extraWidth: 0,
+    extraHeight: this.checked ? 35 : -35
+  } }, '*');
+
+  run();
+});
+
+document.getElementById('randomOffsetEnabled').addEventListener('change', function (e) {
+  document.querySelector('.randomOffsetGroup').classList.toggle('none', !this.checked);
+  parent.postMessage({ pluginMessage: {
+    type: 'resize',
+    extraWidth: 0,
+    extraHeight: this.checked ? 60 : -60
+  } }, '*');
+
+  run();
+});
+
+// material button ripple effet
+function mdcButtonRipple (btn, e) {
+  let rippleNode = document.createElement('span'),
+    rippleDefaultSize = 30,
+    offsetX = btn.offsetLeft,
+    offsetY = btn.offsetTop,
+    bnds = btn.getBoundingClientRect();
+
+  rippleNode.className = 'mdc-button__ripple';
+  rippleNode.style.left = (e.clientX - bnds.x - rippleDefaultSize / 2) + 'px';
+  rippleNode.style.top = (e.clientY - bnds.y - rippleDefaultSize / 2) + 'px';
+
+  btn.appendChild(rippleNode);
+
+  setTimeout(() => {
+    rippleNode.remove();
+  }, 800);
+}
+
+document.addEventListener('click', function (e) {
+  if (e.target.classList && e.target.classList.contains('mdc-button')) {
+    mdcButtonRipple(e.target, e);
+  } else if (e.target.closest('.mdc-button')) {
+    mdcButtonRipple(e.target.closest('.mdc-button'), e);
+  }
+});
+
+// start magic
+document.getElementById('changeAutomatic').addEventListener('change', function (e) {
+  if (this.checked) document.getElementById('apply').setAttribute('disabled', '');
+    else document.getElementById('apply').removeAttribute('disabled');
+});
+document.getElementById('apply').addEventListener('click', function (e) {
+  run(true);
+});
+
+// fn
+function run (isApplyButton) {
+  if (!isApplyButton && !document.getElementById('changeAutomatic').checked) return;
+
+  let data = {
+    angleStart: +document.getElementById('startAngle').value,
+    angleEnd: +document.getElementById('endAngle').value,
+    resetItemRotate: document.getElementById('resetRotateItems').checked,
+    radius: +document.getElementById('radius').value,
+    copiesEnabled: document.getElementById('copiesEnabled').checked,
+    copies: document.getElementById('copies').value,
+    direction: document.getElementById('direction').getAttribute('data-value'),
+    randomOffset: {
+      enabled: document.getElementById('randomOffsetEnabled').checked,
+      min: +document.getElementById('randomOffsetMin').value,
+      max: +document.getElementById('randomOffsetMax').value,
+    },
+    rotateItems: document.getElementById('rotateEachItems').checked ? (document.getElementById('rotateEachItemsRandom').checked ? 'random' : +document.getElementById('rotateItemsValueRange').value) : false,
+    counterClockwise: document.getElementById('counterClockwise').checked,
+  };
+
+  parent.postMessage({ pluginMessage: {
+    type: 'magic',
+    data: data
+  } }, '*');
+}

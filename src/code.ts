@@ -1,7 +1,10 @@
 import { createCompilerHost } from "../node_modules/typescript/lib/typescript";
 
+let UIWidth = 230;
+let UIHeight = 340;
+
 figma.showUI(__html__);
-figma.ui.resize(230, 280);
+figma.ui.resize(UIWidth, UIHeight);
 
 const wVal = 1.22465;
 const hVal = 0.7070;
@@ -87,6 +90,10 @@ function rotateByCenter (node, angle) {
   group.parent.insertChild(idx, node);
 }
 
+function rMinMax (min, max) {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
 const FN = {
   toRotate: function (options) {
     options.node.x = (options.pos.xc - options.node.width / 2) - Math.cos(mathRadians(options.angle)) * (options.radius);
@@ -121,6 +128,7 @@ const FN = {
     options.pos = getPositionOfSelection([options.node]);
 
     for (let i = 0; i < options.copies; i++) {
+      options.radius = (options.randomOffset.enabled ? rMinMax(options.randomOffset.min, options.randomOffset.max) : options.radius),
       options.angle = options.drnAngle + (options.angleStart + options.rotateValue * i);
 
       FN.toRotate(options);
@@ -151,15 +159,23 @@ figma.ui.onmessage = msg => {
 
       // let pos = getPositionOfSelection(null);
 
-      const resetItemRotate = false;
-      const radius = 200;
-      const copies = 0;
-      const direction = 'bottom';
-      const rotateItems = false;
-      const angleStart = 0;
-      const angleEnd = 360;
+      const angleStart = msg.data.angleStart;
+      const angleEnd = msg.data.angleEnd;
+      const resetItemRotate = msg.data.resetItemRotate;
+      const radius = msg.data.radius;
+      const copies = msg.data.copies;
+      const copiesEnabled = msg.data.copiesEnabled;
+      const direction = msg.data.direction;
+      const rotateItems = msg.data.rotateItems;
+      const counterClockwise = msg.data.counterClockwise ? 1 : -1;
+      const randomOffset = {
+        enabled: msg.data.randomOffset.enabled,
+        min: msg.data.randomOffset.min,
+        max: msg.data.randomOffset.max,
+      };
+
       const nodeCount = figma.currentPage.selection.length;
-      const rotateValue = (angleEnd - angleStart) / (copies > 0 ? copies : (nodeCount > 1 ? nodeCount - 1 : nodeCount));
+      const rotateValue = (angleEnd - angleStart) / (copiesEnabled && copies > 0 ? copies : (nodeCount > 1 ? nodeCount - 1 : nodeCount));
       let drnAngle = 270;
       let counter = 0;
 
@@ -171,24 +187,30 @@ figma.ui.onmessage = msg => {
       }
 
       for (const node of figma.currentPage.selection) {
-        FN[copies > 0 ? 'createCopies' : 'toRotate']({
+        FN[copiesEnabled && copies > 0 ? 'createCopies' : 'toRotate']({
           pos: pos,
           node: node,
           copies: copies,
-          radius: radius,
+          radius: (randomOffset.enabled ? rMinMax(randomOffset.min, randomOffset.max) : radius),
           drnAngle: drnAngle,
           angleEnd: angleEnd,
           direction: direction,
           angleStart: angleStart,
           rotateItems: rotateItems,
           rotateValue: rotateValue,
+          randomOffset: randomOffset,
           resetItemRotate: resetItemRotate,
-          angle: drnAngle + (angleStart + rotateValue * counter),
+          angle: drnAngle + (angleStart + rotateValue * counter) * counterClockwise,
         });
         counter++;
       }
 
       break;
+    }
+    case 'resize': {
+      UIWidth += (+msg.extraWidth);
+      UIHeight += (+msg.extraHeight);
+      figma.ui.resize(UIWidth, UIHeight);
     }
   }
 };

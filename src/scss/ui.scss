@@ -1,26 +1,36 @@
 @import 'config';
 @import 'range';
-@import 'material-input';
-@import 'material-select';
+@import 'material/input';
+@import 'material/select';
+@import 'material/checkbox';
+@import 'material/button';
+@import 'material/switch';
 
+
+$debug: false;
 
 $button-size:            40px;
 $button-gutter:          5px;
 $button-icon-size:       80%;
 
 body {
-  @include wh(100%);
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
+  @if ($debug) {
+    @include wh(100%);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+  }
+  overflow: hidden;
   font-family: Arial, Helvetica, sans-serif;
 }
 
 #app {
-  display: block;
-  border: 1px solid rgba(#000, 0.2);
-  @include wh(230px, 280px);
+  @if ($debug) {
+    display: block;
+    border: 1px solid rgba(#000, 0.2);
+    @include wh(230px, 310px);
+  }
 }
 
 .text-right  { text-align: right; }
@@ -72,10 +82,17 @@ body {
   justify-content: space-between;
 
   &--start {
-    align-items: flex-end;
+    align-items: flex-start;
   }
   &--end {
-    align-items: flex-start;
+    align-items: flex-end;
+  }
+
+  &--left {
+    justify-content: flex-start;
+  }
+  &--right {
+    justify-content: flex-end;
   }
 
   &__label {
@@ -90,6 +107,15 @@ body {
   }
 }
 
+[disabled] {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.none {
+  display: none;
+}
+
 
 .startAngleInput {
   margin-top: 5px;
@@ -102,4 +128,14 @@ body {
 #direction {
   width: 170px;
   margin-left: 10px;
+}
+#rotateItemsValue {
+  width: 100%;
+}
+#rotateItemsValueRange {
+  top: 4px;
+  position: relative
+}
+.rotateItemsValueInput {
+  margin-left: 5px;
 }

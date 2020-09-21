@@ -1,5 +1,5 @@
 <div id="app">
-  <div class="flex-group flex-group--start">
+  <div class="flex-group flex-group--end">
     <label class="flex-group__label">Start angle:</label>
     <input type="range" id="startAngle" class="range" min="0" max="360" value="0">
     <div class="startAngleInput mdc-input mdc-input--outline">
@@ -8,7 +8,7 @@
     </div>
   </div>
 
-  <div class="flex-group flex-group--start">
+  <div class="flex-group flex-group--end">
     <label class="flex-group__label flex-group__label--right">End angle:</label>
     <div class="endAngleInput mdc-input mdc-input--outline">
       <input type="number" id="endAngleInput" min="0" max="360" value="360" required>
@@ -18,21 +18,40 @@
   </div>
 
   <div class="flex-group">
-    <div class="mdc-input">
-      <input type="number" id="radius" data-min="0" value="10" required>
+    <label class="mdc-checkbox">
+      <input id="rotateEachItems" type="checkbox">
+      <label for="rotateEachItems" class="mdc-checkbox__label">Rotate each items</label>
+    </label>
+    <label class="mdc-checkbox" disabled>
+      <input id="rotateEachItemsRandom" type="checkbox">
+      <label for="rotateEachItemsRandom" class="mdc-checkbox__label">Random</label>
+    </label>
+  </div>
+
+  <div class="flex-group rotateItemsValueGroup none">
+    <input type="range" id="rotateItemsValueRange" class="range" min="0" max="360" value="0">
+    <div class="rotateItemsValueInput mdc-input mdc-input--outline">
+      <input type="number" id="rotateItemsValueInput" min="0" max="360" value="360" required>
       <span class="mdc-input__bar"></span>
-      <label class="mdc-input__label">Offset radius (px):</label>
     </div>
-    <div id="direction" class="mdc-select">
+  </div>
+
+  <div class="flex-group">
+    <div class="mdc-input">
+      <input type="number" id="radius" min="0" max="100000" value="200" required>
+      <span class="mdc-input__bar"></span>
+      <label class="mdc-input__label">Offset:</label>
+    </div>
+    <div id="direction" class="mdc-select active" data-value="top" data-index="0">
       <div class="mdc-select__selected-anchor">
         <span class="mdc-select__label">Direction:</span>
-        <span class="mdc-select__selected-text"></span>
+        <span class="mdc-select__selected-text">Top</span>
         <span class="mdc-select__bar"></span>
         <span class="mdc-select__icon"></span>
       </div>
       <ul class="mdc-select__menu">
         <li class="mdc-select__menu__item" data-value="top" data-index="0">
-          <span>10</span>
+          <span>Top</span>
         </li>
         <li class="mdc-select__menu__item" data-value="right" data-index="1">
           <span>Right</span>
@@ -46,4 +65,54 @@
       </ul>
     </div>
   </div>
+
+  <label class="mdc-checkbox">
+    <input id="randomOffsetEnabled" type="checkbox">
+    <label for="randomOffsetEnabled" class="mdc-checkbox__label">Random offset</label>
+  </label>
+  <div class="flex-group randomOffsetGroup none">
+    <div class="randomOffsetMin mdc-input">
+      <input type="number" id="randomOffsetMin" min="0" max="1000000" value="200" required>
+      <span class="mdc-input__bar"></span>
+      <span class="mdc-input__label">Min:</span>
+    </div>
+    <div class="randomOffsetMax mdc-input">
+      <input type="number" id="randomOffsetMax" min="0" max="1000000" value="300" required>
+      <span class="mdc-input__bar"></span>
+      <span class="mdc-input__label">Max:</span>
+    </div>
+  </div>
+
+  <div class="flex-group flex-group--start">
+    <label class="mdc-checkbox">
+      <input id="copiesEnabled" type="checkbox">
+      <label for="copiesEnabled" class="mdc-checkbox__label">Copies enabled</label>
+    </label>
+    <div class="copies mdc-input none">
+      <input type="number" id="copies" min="1" max="100000" value="1" required>
+      <span class="mdc-input__bar"></span>
+      <span class="mdc-input__label">Copies:</span>
+    </div>
+  </div>
+
+  <label class="mdc-checkbox">
+    <input id="resetRotateItems" type="checkbox">
+    <label for="resetRotateItems" class="mdc-checkbox__label">Reset rotate from item</label>
+  </label>
+  <label class="mdc-checkbox">
+    <input id="counterClockwise" type="checkbox">
+    <label for="counterClockwise" class="mdc-checkbox__label">Counter Clockwise</label>
+  </label>
+
+  <div class="flex-group">
+    <label class="mdc-switch">
+      <label for="changeAutomatic" class="mdc-switch__label">Change automatic</label>
+      <input id="changeAutomatic" type="checkbox">
+      <span class="mdc-switch__icon"></span>
+    </label>
+    <div id="apply" class="mdc-button">
+      <span>Apply</span>
+    </div>
+  </div>
+
 </div>
