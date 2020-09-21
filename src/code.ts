@@ -1,5 +1,22 @@
 import { createCompilerHost } from "../node_modules/typescript/lib/typescript";
 
+const settingsDefault = {
+  angleStart: 0,
+  angleEnd: 360,
+  resetItemRotate: false,
+  radius: 400,
+  copiesEnabled: false,
+  copies: 1,
+  direction: 'top',
+  randomOffset: {
+    enabled: false,
+    min: 200,
+    max: 400,
+  },
+  rotateItems: false,
+  counterClockwise: false
+};
+
 let UIWidth = 230;
 let UIHeight = 340;
 
@@ -96,8 +113,8 @@ function rMinMax (min, max) {
 
 const FN = {
   toRotate: function (options) {
-    options.node.x = (options.pos.xc - options.node.width / 2) - Math.cos(mathRadians(options.angle)) * (options.radius);
-    options.node.y = (options.pos.yc - options.node.height / 2) + Math.sin(mathRadians(options.angle)) * (options.radius);
+    options.node.x = (options.pos.xc - options.node.width / 2) - Math.cos(mathRadians(options.angle)) * (options.radius / 2);
+    options.node.y = (options.pos.yc - options.node.height / 2) + Math.sin(mathRadians(options.angle)) * (options.radius / 2);
   
     if (!options.resetItemRotate) {
       let extra = 90;
@@ -140,6 +157,28 @@ const FN = {
     }
   }
 };
+
+async function getSettings() {
+  let userOptions = await figma.clientStorage.getAsync('settings');
+
+  if (userOptions) {
+    return JSON.parse(userOptions);
+  } else {
+    await figma.clientStorage.setAsync('settings', JSON.stringify(settingsDefault));
+    return settingsDefault;
+  }
+}
+
+async function saveSettings (data) {
+  await figma.clientStorage.setAsync('settings', JSON.stringify(data));
+  return 'saved';
+}
+
+// figma.on('close', () => {
+//   figma.ui.postMessage({
+//     type: 'onCloseSaveSettings'
+//   });
+// });
 
 figma.ui.onmessage = msg => {
   switch (msg.type) {
@@ -211,6 +250,30 @@ figma.ui.onmessage = msg => {
       UIWidth += (+msg.extraWidth);
       UIHeight += (+msg.extraHeight);
       figma.ui.resize(UIWidth, UIHeight);
+
+      break;
+    }
+    case 'checkSettings': {
+      let settings = getSettings()
+        .then(settings => {
+          figma.ui.postMessage({
+            type: 'setSettings',
+            settings: settings
+          });
+        });
+
+      break;
+    }
+    case 'saveSettings': {
+      saveSettings(msg.settings)
+        .then((message) => {
+          figma.ui.postMessage({
+            type: 'settingsSaved',
+            message: 'Settings saved! ;)'
+          });
+        });
+
+      break;
     }
   }
 };

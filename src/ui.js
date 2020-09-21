@@ -2,82 +2,80 @@ import './scss/ui.scss'
 
 const uiSizeExtra = 60;
 
-// let userData = {
-//   angleStart: 0,
-//   angleEnd: 360,
-//   resetItemRotate: false,
-//   radius: 200,
-//   copiesEnabled: false,
-//   copies: 1,
-//   direction: 'top',
-//   randomOffset: {
-//     enabled: false,
-//     min: 200,
-//     max: 400,
-//   },
-//   rotateItems: false,
-//   counterClockwise: false
-// };
+// user settings
+parent.postMessage({ pluginMessage: {
+  type: 'checkSettings'
+} }, '*');
 
-// async function loadSettings() {
-//   let userOptions = await figma.clientStorage.getAsync('options');
+window.onmessage = async (event) => {
+  if (event.data.pluginMessage.type === 'setSettings') {
+    setSettings(event.data.pluginMessage.settings);
+  } else if (event.data.pluginMessage.type === 'onCloseSaveSettings') {
+    saveSettings();
+  }
+};
 
-//   if (userOptions) {
-//     userData = JSON.parse(userOptions);
-//     applySettings();
-//   } else {
-//     await figma.clientStorage.setAsync('options', JSON.stringify(userData));
-//   }
-// }
+function saveSettings() {
+  console.log('Save settings!');
+  parent.postMessage({ pluginMessage: {
+    type: 'saveSettings',
+    settings: {
+      angleStart: +document.getElementById('startAngle').value,
+      angleEnd: +document.getElementById('endAngle').value,
+      resetItemRotate: document.getElementById('resetRotateItems').checked,
+      radius: +document.getElementById('radius').value,
+      copiesEnabled: document.getElementById('copiesEnabled').checked,
+      copies: document.getElementById('copies').value,
+      direction: document.getElementById('direction').getAttribute('data-value'),
+      randomOffset: {
+        enabled: document.getElementById('randomOffsetEnabled').checked,
+        min: +document.getElementById('randomOffsetMin').value,
+        max: +document.getElementById('randomOffsetMax').value,
+      },
+      rotateItems: document.getElementById('rotateEachItems').checked ? (document.getElementById('rotateEachItemsRandom').checked ? 'random' : +document.getElementById('rotateItemsValueRange').value) : false,
+      counterClockwise: document.getElementById('counterClockwise').checked,
+      changeAutomatic: document.getElementById('changeAutomatic').checked
+    }
+  } }, '*');
+}
 
-// function saveSettings() {
-//   userData = {
-//     angleStart: +document.getElementById('startAngle').value,
-//     angleEnd: +document.getElementById('endAngle').value,
-//     resetItemRotate: document.getElementById('resetRotateItems').checked,
-//     radius: +document.getElementById('radius').value,
-//     copiesEnabled: document.getElementById('copiesEnabled').checked,
-//     copies: document.getElementById('copies').value,
-//     direction: document.getElementById('direction').getAttribute('data-value'),
-//     randomOffset: {
-//       enabled: document.getElementById('randomOffsetEnabled').checked,
-//       min: +document.getElementById('randomOffsetMin').value,
-//       max: +document.getElementById('randomOffsetMax').value,
-//     },
-//     rotateItems: document.getElementById('rotateEachItems').checked ? (document.getElementById('rotateEachItemsRandom').checked ? 'random' : +document.getElementById('rotateItemsValueRange').value) : false,
-//     counterClockwise: +document.getElementById('counterClockwise').checked,
-//   };
+function setSettings (data) {
+  console.log('Set settings!');
+  document.getElementById('startAngle').value = data.angleStart;
+  document.getElementById('endAngle').value = data.angleEnd;
+  document.getElementById('resetRotateItems').checked = data.resetItemRotate;
+  document.getElementById('radius').value = data.radius;
+  document.getElementById('copies').value = data.copies;
+  document.getElementById('copiesEnabled').checked = data.copiesEnabled;
+  document.querySelector('.copies').classList.toggle('none', !data.copiesEnabled);
+  if (data.copiesEnabled) parent.postMessage({ pluginMessage: {
+    type: 'resize',
+    extraWidth: 0,
+    extraHeight: data.copiesEnabled ? 35 : -35
+  } }, '*');
 
-//   figma.clientStorage.setAsync('options', JSON.stringify(userData));
-// }
 
-// function applySettings() {
-//   document.getElementById('startAngle').value = userData.angleStart;
-//   document.getElementById('endAngle').value = userData.angleEnd;
-//   document.getElementById('resetRotateItems').checked = userData.resetItemRotate;
-//   document.getElementById('radius').value = userData.radius;
-//   document.getElementById('copiesEnabled').checked = userData.copiesEnabled;
-//   document.getElementById('copies').value = userData.copies;
+  let dNode = document.getElementById('direction'),
+    dItem = dNode.querySelector('.mdc-select__menu [data-value="' + data.direction + '"]');
+  dNode.setAttribute('data-value', data.direction);
+  dNode.setAttribute('data-index', dItem.getAttribute('data-index'));
+  dNode.querySelector('.mdc-select__selected-text').innerHTML = dItem.innerText;
 
-//   let dNode = document.getElementById('direction'),
-//     ditem = dNode.querySelector('.mdc-select__menu [data-value="' + userData.direction + '"]');
-//   dNode.setAttribute('data-value', userData.direction);
-//   dNode.setAttribute('data-index', dNode.getAttribute('data-index'));
-//   dNode.querySelector('.mdc-select__selected-text').innerHTML = dNode.innerText;
+  document.getElementById('randomOffsetEnabled').checked = data.randomOffset.enabled;
+  document.getElementById('randomOffsetMin').value = data.randomOffset.min;
+  document.getElementById('randomOffsetMax').value = data.randomOffset.max;
 
-//   document.getElementById('randomOffsetEnabled').checked = userData.randomOffset.enabled;
-//   document.getElementById('randomOffsetMin').value = userData.randomOffset.min;
-//   document.getElementById('randomOffsetMax').value = userData.randomOffset.max;
+  document.getElementById('rotateEachItems').checked = (data.rotateItems === true);
+  document.getElementById('rotateEachItemsRandom').checked = (data.rotateItems === 'random');
+  document.getElementById('rotateItemsValueRange').value = (typeof data.rotateItems === 'number' ? data.rotateItems : 180);
+  document.getElementById('rotateItemsValueInput').value = document.getElementById('rotateItemsValueRange').value;
 
-//   document.getElementById('rotateEachItems').checked = userData.rotateItems === true;
-//   document.getElementById('rotateEachItemsRandom').checked = userData.rotateItems === 'random';
-//   document.getElementById('rotateItemsValueRange').value = typeof userData.rotateItems === 'number' ? userData.rotateItems : 0;
-//   document.getElementById('counterClockwise').checked = userData.counterClockwise;
-
-//   figma.clientStorage.setAsync('options', JSON.stringify(userData));
-// }
-
-// loadSettings();
+  document.getElementById('counterClockwise').checked = data.counterClockwise;
+  document.getElementById('changeAutomatic').checked = data.changeAutomatic;
+  if (data.changeAutomatic) {
+    document.getElementById('apply').setAttribute('disabled', '');
+  }
+}
 
 function inputMouseWheel (e) {
   e.preventDefault();
@@ -326,7 +324,6 @@ function mdcButtonRipple (btn, e) {
     rippleNode.remove();
   }, 800);
 }
-
 document.addEventListener('click', function (e) {
   if (e.target.classList && e.target.classList.contains('mdc-button')) {
     mdcButtonRipple(e.target, e);
@@ -346,6 +343,7 @@ document.getElementById('apply').addEventListener('click', function (e) {
 
 // fn
 function run (isApplyButton) {
+  saveSettings();
   if (!isApplyButton && !document.getElementById('changeAutomatic').checked) return;
 
   let data = {
