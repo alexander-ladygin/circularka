@@ -13,6 +13,8 @@ const settingsDefault = {
     min: 200,
     max: 400,
   },
+  rotateItemsChecked: false,
+  rotateItemsRandomChecked: false,
   rotateItems: false,
   counterClockwise: false
 };
@@ -158,7 +160,7 @@ const FN = {
   }
 };
 
-async function getSettings() {
+async function loadSettings() {
   let userOptions = await figma.clientStorage.getAsync('settings');
 
   if (userOptions) {
@@ -173,12 +175,6 @@ async function saveSettings (data) {
   await figma.clientStorage.setAsync('settings', JSON.stringify(data));
   return 'saved';
 }
-
-// figma.on('close', () => {
-//   figma.ui.postMessage({
-//     type: 'onCloseSaveSettings'
-//   });
-// });
 
 figma.ui.onmessage = msg => {
   switch (msg.type) {
@@ -253,11 +249,11 @@ figma.ui.onmessage = msg => {
 
       break;
     }
-    case 'checkSettings': {
-      let settings = getSettings()
+    case 'loadSettings': {
+      let settings = loadSettings()
         .then(settings => {
           figma.ui.postMessage({
-            type: 'setSettings',
+            type: 'applyToHTMLSettings',
             settings: settings
           });
         });

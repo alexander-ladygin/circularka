@@ -4,19 +4,17 @@ const uiSizeExtra = 60;
 
 // user settings
 parent.postMessage({ pluginMessage: {
-  type: 'checkSettings'
+  type: 'loadSettings'
 } }, '*');
 
 window.onmessage = async (event) => {
-  if (event.data.pluginMessage.type === 'setSettings') {
-    setSettings(event.data.pluginMessage.settings);
-  } else if (event.data.pluginMessage.type === 'onCloseSaveSettings') {
-    saveSettings();
+  if (event.data.pluginMessage.type === 'applyToHTMLSettings') {
+    applyToHTMLSettings(event.data.pluginMessage.settings);
   }
 };
 
 function saveSettings() {
-  console.log('Save settings!');
+  console.log('Settings save!');
   parent.postMessage({ pluginMessage: {
     type: 'saveSettings',
     settings: {
@@ -32,6 +30,8 @@ function saveSettings() {
         min: +document.getElementById('randomOffsetMin').value,
         max: +document.getElementById('randomOffsetMax').value,
       },
+      rotateItemsChecked: document.getElementById('rotateEachItems').checked,
+      rotateItemsRandomChecked: document.getElementById('rotateEachItemsRandom').checked,
       rotateItems: document.getElementById('rotateEachItems').checked ? (document.getElementById('rotateEachItemsRandom').checked ? 'random' : +document.getElementById('rotateItemsValueRange').value) : false,
       counterClockwise: document.getElementById('counterClockwise').checked,
       changeAutomatic: document.getElementById('changeAutomatic').checked
@@ -39,8 +39,9 @@ function saveSettings() {
   } }, '*');
 }
 
-function setSettings (data) {
-  console.log('Set settings!');
+function applyToHTMLSettings (data) {
+  let extraHeight = 0;
+
   document.getElementById('startAngle').value = data.angleStart;
   document.getElementById('endAngle').value = data.angleEnd;
   document.getElementById('resetRotateItems').checked = data.resetItemRotate;
@@ -48,12 +49,9 @@ function setSettings (data) {
   document.getElementById('copies').value = data.copies;
   document.getElementById('copiesEnabled').checked = data.copiesEnabled;
   document.querySelector('.copies').classList.toggle('none', !data.copiesEnabled);
-  if (data.copiesEnabled) parent.postMessage({ pluginMessage: {
-    type: 'resize',
-    extraWidth: 0,
-    extraHeight: data.copiesEnabled ? 35 : -35
-  } }, '*');
-
+  if (data.copiesEnabled) {
+    extraHeight += 45;
+  }
 
   let dNode = document.getElementById('direction'),
     dItem = dNode.querySelector('.mdc-select__menu [data-value="' + data.direction + '"]');
@@ -62,11 +60,28 @@ function setSettings (data) {
   dNode.querySelector('.mdc-select__selected-text').innerHTML = dItem.innerText;
 
   document.getElementById('randomOffsetEnabled').checked = data.randomOffset.enabled;
+  document.querySelector('.randomOffsetGroup').classList.toggle('none', !data.randomOffset.enabled);
+
+  let random = document.getElementById('rotateEachItemsRandom');
+  if (data.randomOffset.enabled) random.parentNode.removeAttribute('disabled');
+    else random.parentNode.setAttribute('disabled', '');
+
+  if (data.randomOffset.enabled) {
+    extraHeight += 60;
+  }
   document.getElementById('randomOffsetMin').value = data.randomOffset.min;
   document.getElementById('randomOffsetMax').value = data.randomOffset.max;
 
-  document.getElementById('rotateEachItems').checked = (data.rotateItems === true);
-  document.getElementById('rotateEachItemsRandom').checked = (data.rotateItems === 'random');
+  document.getElementById('rotateEachItems').checked = data.rotateItemsChecked;
+  document.querySelector('.rotateItemsValueGroup').classList.toggle('none', !data.rotateItemsChecked);
+  if (data.rotateItemsChecked) {
+    extraHeight += 60;
+  }
+  document.getElementById('rotateEachItemsRandom').checked = (data.rotateItemsRandomChecked);
+  let rotateValueNode = document.querySelector('.rotateItemsValueGroup');
+  if (data.rotateItemsRandomChecked) rotateValueNode.setAttribute('disabled', '');
+    else rotateValueNode.removeAttribute('disabled');
+
   document.getElementById('rotateItemsValueRange').value = (typeof data.rotateItems === 'number' ? data.rotateItems : 180);
   document.getElementById('rotateItemsValueInput').value = document.getElementById('rotateItemsValueRange').value;
 
@@ -74,6 +89,14 @@ function setSettings (data) {
   document.getElementById('changeAutomatic').checked = data.changeAutomatic;
   if (data.changeAutomatic) {
     document.getElementById('apply').setAttribute('disabled', '');
+  }
+
+  if (extraHeight > 0) {
+    parent.postMessage({ pluginMessage: {
+      type: 'resize',
+      extraWidth: 0,
+      extraHeight: extraHeight
+    } }, '*');
   }
 }
 
@@ -183,7 +206,6 @@ endAngleInput.addEventListener('change', function (e) {
 });
 
 // rotate each items
-
 rotateItemsValueRange.addEventListener('change', function (e) {
   shiftKeyPress = ctrlKeyPress = false;
   run();
@@ -250,7 +272,6 @@ document.addEventListener('click', function (e) {
   }
 });
 
-
 // checkbox
 document.getElementById('resetRotateItems').addEventListener('change', function (e) {
   run();
@@ -258,6 +279,7 @@ document.getElementById('resetRotateItems').addEventListener('change', function 
 document.getElementById('counterClockwise').addEventListener('change', function (e) {
   run();
 });
+
 document.getElementById('rotateEachItems').addEventListener('change', function (e) {
   let random = document.getElementById('rotateEachItemsRandom');
   if (this.checked) random.parentNode.removeAttribute('disabled');
@@ -272,7 +294,6 @@ document.getElementById('rotateEachItems').addEventListener('change', function (
 
   run();
 });
-
 document.getElementById('rotateEachItemsRandom').addEventListener('change', function (e) {
   let rotateValueNode = document.querySelector('.rotateItemsValueGroup');
   if (!this.checked) rotateValueNode.removeAttribute('disabled');
@@ -336,6 +357,7 @@ document.addEventListener('click', function (e) {
 document.getElementById('changeAutomatic').addEventListener('change', function (e) {
   if (this.checked) document.getElementById('apply').setAttribute('disabled', '');
     else document.getElementById('apply').removeAttribute('disabled');
+  saveSettings();
 });
 document.getElementById('apply').addEventListener('click', function (e) {
   run(true);
@@ -359,6 +381,8 @@ function run (isApplyButton) {
       min: +document.getElementById('randomOffsetMin').value,
       max: +document.getElementById('randomOffsetMax').value,
     },
+    rotateItemsChecked: document.getElementById('rotateEachItems').checked,
+    rotateItemsRandomChecked: document.getElementById('rotateEachItemsRandom').checked,
     rotateItems: document.getElementById('rotateEachItems').checked ? (document.getElementById('rotateEachItemsRandom').checked ? 'random' : +document.getElementById('rotateItemsValueRange').value) : false,
     counterClockwise: document.getElementById('counterClockwise').checked,
   };
