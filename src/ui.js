@@ -29,6 +29,7 @@ function saveSettings() {
         min: +document.getElementById('randomOffsetMin').value,
         max: +document.getElementById('randomOffsetMax').value,
       },
+      randomOrder: document.getElementById('randomOrder').checked,
       rotateItemsChecked: document.getElementById('rotateEachItems').checked,
       rotateItemsRandomChecked: document.getElementById('rotateEachItemsRandom').checked,
       rotateItems: document.getElementById('rotateEachItems').checked ? (document.getElementById('rotateEachItemsRandom').checked ? 'random' : +document.getElementById('rotateItemsValueRange').value) : false,
@@ -84,8 +85,14 @@ function applyToHTMLSettings (data) {
   if (data.rotateItemsRandomChecked) rotateValueNode.setAttribute('disabled', '');
     else rotateValueNode.removeAttribute('disabled');
 
+  let rotateEachItemsRandomParent = document.getElementById('rotateEachItemsRandom').parentNode;
+  if (data.rotateItemsChecked) rotateEachItemsRandomParent.removeAttribute('disabled');
+    else rotateEachItemsRandomParent.setAttribute('disabled', '');
+
   document.getElementById('rotateItemsValueRange').value = (typeof data.rotateItems === 'number' ? data.rotateItems : 180);
   document.getElementById('rotateItemsValueInput').value = document.getElementById('rotateItemsValueRange').value;
+
+  document.getElementById('randomOrder').checked = data.randomOrder;
 
   document.getElementById('counterClockwise').checked = data.counterClockwise;
   document.getElementById('changeAutomatic').checked = data.changeAutomatic;
@@ -102,17 +109,21 @@ function applyToHTMLSettings (data) {
   }
 }
 
-function inputMouseWheel (e) {
+function inputNumberRound (e) {
+  let delta = ( e.keyCode === 38 ? 1 : (e.keyCode === 40 ? -1 : Math.max(-1, Math.min(1, e.wheelDelta || -e.detail))) );
+  if (delta === 0) return;
+
   e.preventDefault();
 
   let node = e.target;
   let round = e.shiftKey || e.ctrlKey || e.altKey;
   let step = e.shiftKey ? 10 : (e.ctrlKey ? (e.altKey ? 100 : 5) : 1);
-  let delta = Math.max(-1, Math.min(1, e.wheelDelta || -e.detail));
   let nodeValue = +node.value;
+  let min = +node.getAttribute('min') || 0;
+  let max = +node.getAttribute('max') || 100000 * 100000;
   let newValue = nodeValue + step * delta;
 
-  if (newValue >= 0) {
+  if (newValue >= min && newValue <= max) {
     if (round && delta < 0) {
       if (newValue % step === 0) {
         node.value = newValue;
@@ -129,9 +140,11 @@ function inputMouseWheel (e) {
       node.value = newValue;
     }
   } else {
-    node.value = 0;
+    node.value = newValue < min ? min : max;
   }
 
+  let eventChange = new Event('change');
+  node.dispatchEvent(eventChange);
 }
 
 const startAngleRange = document.getElementById('startAngle');
@@ -180,6 +193,8 @@ startAngleInput.addEventListener('change', function (e) {
   shiftKeyPress = ctrlKeyPress = false;
   run();
 });
+startAngleInput.addEventListener('keydown', inputNumberRound);
+startAngleInput.addEventListener('mousewheel', inputNumberRound);
 
 // end range
 endAngleRange.addEventListener('change', function (e) {
@@ -206,6 +221,8 @@ endAngleInput.addEventListener('change', function (e) {
   shiftKeyPress = ctrlKeyPress = false;
   run();
 });
+endAngleInput.addEventListener('keydown', inputNumberRound);
+endAngleInput.addEventListener('mousewheel', inputNumberRound);
 
 // rotate each items
 rotateItemsValueRange.addEventListener('change', function (e) {
@@ -224,6 +241,27 @@ rotateItemsValueInput.addEventListener('change', function (e) {
   shiftKeyPress = ctrlKeyPress = false;
   run();
 });
+rotateItemsValueInput.addEventListener('keydown', inputNumberRound);
+rotateItemsValueInput.addEventListener('mousewheel', inputNumberRound);
+
+// offset radius
+document.getElementById('radius').addEventListener('change', function (e) {
+  run();
+});
+document.getElementById('radius').addEventListener('keydown', inputNumberRound);
+document.getElementById('radius').addEventListener('mousewheel', inputNumberRound);
+
+// random offset
+document.getElementById('randomOffsetMin').addEventListener('change', function (e) {
+  run();
+});
+document.getElementById('randomOffsetMax').addEventListener('change', function (e) {
+  run();
+});
+document.getElementById('randomOffsetMin').addEventListener('keydown', inputNumberRound);
+document.getElementById('randomOffsetMin').addEventListener('mousewheel', inputNumberRound);
+document.getElementById('randomOffsetMax').addEventListener('keydown', inputNumberRound);
+document.getElementById('randomOffsetMax').addEventListener('mousewheel', inputNumberRound);
 
 // mdc-selec
 [].forEach.call(document.querySelectorAll('.mdc-select'), function (select) {
@@ -307,6 +345,8 @@ document.getElementById('rotateEachItemsRandom').addEventListener('change', func
 document.getElementById('copies').addEventListener('change', function (e) {
   run();
 });
+document.getElementById('copies').addEventListener('keydown', inputNumberRound);
+document.getElementById('copies').addEventListener('mousewheel', inputNumberRound);
 document.getElementById('copiesEnabled').addEventListener('change', function (e) {
   document.querySelector('.copies').classList.toggle('none', !this.checked);
   parent.postMessage({ pluginMessage: {
@@ -328,6 +368,10 @@ document.getElementById('randomOffsetEnabled').addEventListener('change', functi
 
   run();
 });
+document.getElementById('randomOrder').addEventListener('change', function (e) {
+  run();
+});
+
 
 // material button ripple effet
 function mdcButtonRipple (btn, e) {
@@ -383,6 +427,7 @@ function run (isApplyButton) {
       min: +document.getElementById('randomOffsetMin').value,
       max: +document.getElementById('randomOffsetMax').value,
     },
+    randomOrder: document.getElementById('randomOrder').checked,
     rotateItemsChecked: document.getElementById('rotateEachItems').checked,
     rotateItemsRandomChecked: document.getElementById('rotateEachItemsRandom').checked,
     rotateItems: document.getElementById('rotateEachItems').checked ? (document.getElementById('rotateEachItemsRandom').checked ? 'random' : +document.getElementById('rotateItemsValueRange').value) : false,

@@ -13,6 +13,7 @@ const settingsDefault = {
     min: 200,
     max: 400,
   },
+  randomOrder: false,
   rotateItemsChecked: false,
   rotateItemsRandomChecked: false,
   rotateItems: false,
@@ -20,7 +21,7 @@ const settingsDefault = {
 };
 
 let UIWidth = 230;
-let UIHeight = 340;
+let UIHeight = 365;
 
 figma.showUI(__html__);
 figma.ui.resize(UIWidth, UIHeight);
@@ -113,47 +114,66 @@ function rMinMax (min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
+function arrayRandomOrder (arr) {
+  var ci = arr.length, tv, ri;
+
+  while (0 !== ci) {
+    ri = Math.floor(Math.random() * ci);
+    ci -= 1;
+    tv = arr[ci];
+    arr[ci] = arr[ri];
+    arr[ri] = tv;
+  }
+
+  return arr;
+}
+
 const FN = {
   toRotate: function (options) {
     options.node.x = (options.pos.xc - options.node.width / 2) - Math.cos(mathRadians(options.angle)) * (options.radius / 2);
     options.node.y = (options.pos.yc - options.node.height / 2) + Math.sin(mathRadians(options.angle)) * (options.radius / 2);
-  
+
     if (!options.resetItemRotate) {
       let extra = 90;
-  
+
       switch (options.direction.toLowerCase().slice(0,1)) {
         case 't': extra = 90; break;
         case 'r': extra = 360; break;
         case 'b': extra = 270; break;
         case 'l': extra = 180; break;
       }
-  
+
       let angle = Math.atan2(
         (options.node.y + options.node.height / 2) - options.pos.yc,
         (options.node.x + options.node.width / 2) - options.pos.xc
       ) * (180 / Math.PI) + extra;
-  
+
       if (options.rotateItems == 'random') {
         angle = Math.random() * 360;
       } else if (typeof options.rotateItems === 'number') {
         angle = options.rotateItems;
       }
-  
+
       rotateByCenter(options.node, angle);
     }
   },
 
   createCopies: function (options) {
     options.pos = getPositionOfSelection([options.node]);
+    let idx, parent;
 
     for (let i = 0; i < options.copies; i++) {
       options.radius = (options.randomOffset.enabled ? rMinMax(options.randomOffset.min, options.randomOffset.max) : options.radius),
       options.angle = options.drnAngle + (options.angleStart + options.rotateValue * i);
+      options.i = i;
 
       FN.toRotate(options);
 
       if (i < options.copies - 1) {
+        parent = options.node.parent;
+        idx = parent.children.indexOf(options.node);
         options.node = options.node.clone();
+        parent.insertChild(idx, options.node);
         figma.currentPage.selection = figma.currentPage.selection.concat(options.node);
       }
     }
@@ -192,7 +212,7 @@ figma.ui.onmessage = msg => {
       const pos = getPositionOfSelection([group]);
       group.remove();
 
-      // let pos = getPositionOfSelection(null);
+      let items = msg.data.randomOrder ? arrayRandomOrder([...figma.currentPage.selection]) : figma.currentPage.selection;
 
       const angleStart = msg.data.angleStart;
       const angleEnd = msg.data.angleEnd;
@@ -209,20 +229,21 @@ figma.ui.onmessage = msg => {
         max: msg.data.randomOffset.max,
       };
 
-      const nodeCount = figma.currentPage.selection.length;
-      const rotateValue = (angleEnd - angleStart) / (copiesEnabled && copies > 0 ? copies : (nodeCount > 1 ? nodeCount - 1 : nodeCount));
+      const nodeCount = items.length;
+      const rotateValue = (angleEnd - angleStart) / (copiesEnabled && copies > 0 ? copies : nodeCount);
       let drnAngle = 270;
-      let counter = 0;
-
+      
       switch (direction.toLowerCase().slice(0,1)) {
         case 't': drnAngle = 270; break;
         case 'r': drnAngle = 180; break;
         case 'b': drnAngle = 90; break;
         case 'l': drnAngle = 360; break;
       }
-
-      for (const node of figma.currentPage.selection) {
+      
+      let counter = 0;
+      for (const node of items) {
         FN[copiesEnabled && copies > 0 ? 'createCopies' : 'toRotate']({
+          i: counter,
           pos: pos,
           node: node,
           copies: copies,
@@ -235,6 +256,7 @@ figma.ui.onmessage = msg => {
           rotateValue: rotateValue,
           randomOffset: randomOffset,
           resetItemRotate: resetItemRotate,
+          randomOrder: msg.data.randomOrder,
           angle: drnAngle + (angleStart + rotateValue * counter) * counterClockwise,
         });
         counter++;
