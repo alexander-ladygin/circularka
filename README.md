@@ -3,3 +3,5 @@
 ## Circularka - figma plugin
 
 ### Arrangement of objects in a circle in one click
+
+![Ease isometric poster](src/img/circularka_interface.jpg)
