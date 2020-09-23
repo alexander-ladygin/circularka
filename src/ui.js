@@ -14,7 +14,6 @@ window.onmessage = async (event) => {
 };
 
 function saveSettings() {
-  console.log('Settings save!');
   parent.postMessage({ pluginMessage: {
     type: 'saveSettings',
     settings: {
@@ -44,6 +43,9 @@ function applyToHTMLSettings (data) {
 
   document.getElementById('startAngle').value = data.angleStart;
   document.getElementById('endAngle').value = data.angleEnd;
+  document.getElementById('startAngleInput').value = data.angleStart;
+  document.getElementById('endAngleInput').value = data.angleEnd;
+
   document.getElementById('resetRotateItems').checked = data.resetItemRotate;
   document.getElementById('radius').value = data.radius;
   document.getElementById('copies').value = data.copies;
